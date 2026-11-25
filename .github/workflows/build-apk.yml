@@ -51,15 +51,21 @@ jobs:
         run: gradle :app:assembleDebug --no-daemon
 
       - name: Build Signed Release APK (if signing secrets are configured)
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        id: release_build
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           KEYSTORE_PATH: ${{ github.workspace }}/my-upload-key.jks
         run: |
-          echo "$KEYSTORE_BASE64" | base64 -d > "$KEYSTORE_PATH"
-          gradle :app:assembleRelease --no-daemon
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > "$KEYSTORE_PATH"
+            gradle :app:assembleRelease --no-daemon
+            echo "built=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No KEYSTORE_BASE64 secret configured; skipping release build."
+            echo "built=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Upload RelayWeb Debug APK artifact
         uses: actions/upload-artifact@v5
@@ -69,7 +75,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload RelayWeb Release APK artifact (if built)
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        if: steps.release_build.outputs.built == 'true'
         uses: actions/upload-artifact@v5
         with:
           name: relayweb-release-apk
