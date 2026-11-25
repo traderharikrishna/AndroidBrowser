@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">RelayWeb</string>
+    <string name="proxy_service_channel_name">RelayWeb Proxy Service</string>
+    <string name="proxy_service_channel_desc">Persistent notification for active RelayWeb proxy tunnel</string>
+    <string name="proxy_notification_title">RelayWeb Proxy Active</string>
+    <string name="media_service_channel_name">RelayWeb Media Playback</string>
+</resources>
